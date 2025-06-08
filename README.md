@@ -203,6 +203,37 @@ export BASE_PORT=443
 export PERFORMANCE_PROFILE=stress
 ```
 
+## 📈 Performance Insights
+
+The following results were obtained from the focused **`CreateTodoSimulation`** stress test, designed to measure the performance limits of the `POST /todos` endpoint. The test simulated a constantly increasing load over a 3-minute duration.
+
+All predefined performance assertions passed successfully, indicating high stability.
+
+### Key Metrics Summary
+
+| Metric | Total | OK | KO (Errors) |
+|---|:---:|:---:|:---:|
+| **Request Count** | 27,090 | 27,090 | **0** |
+| **Mean Throughput**| **150.5 req/s** | 150.5 req/s| - |
+
+### Response Time Percentiles
+
+| Percentile | Response Time (ms) |
+|---|:---:|
+| 50th (Median) | **1 ms** |
+| 75th | **1 ms** |
+| 95th | **2 ms** |
+| 99th | **2 ms** |
+| Max Response Time | **11 ms** |
+
+### Conclusion & Analysis
+
+The `POST /todos` endpoint demonstrates **exceptional performance and stability** under the simulated stress conditions on the local test environment.
+
+1.  **High Throughput & Stability:** The application sustained an average throughput of **150.5 requests per second** over the entire test duration **with a 0% error rate**. This indicates highly efficient and reliable request processing.
+2.  **Extremely Low Latency:** The response times are great. With 99% of all requests completing in just **2 milliseconds** and a maximum observed latency of only **11 milliseconds**, the create operation is highly optimized and shows no signs of degradation under increasing load.
+![gatling_animation](.images/gatling_results.gif)
+
 ## 🔍 Notable Implementation Details
 
 1. **No Direct GET by ID**: The API lacks `GET /todos/:id`, so we search through the full list
