@@ -1,0 +1,44 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Todo API Test Suite">
+
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+
+    <test name="Sequential REST Tests" parallel="false">
+        <groups>
+            <run>
+                <include name="sequential"/>
+            </run>
+        </groups>
+        <packages>
+            <package name="todo"/>
+        </packages>
+    </test>
+
+    <test name="Parallel REST Tests" parallel="methods" thread-count="5">
+        <groups>
+            <run>
+                <include name="rest"/>
+                <include name="crud"/>
+                <exclude name="websocket"/>
+                <exclude name="sequential"/>
+            </run>
+        </groups>
+        <packages>
+            <package name="todo"/>
+        </packages>
+    </test>
+
+    <test name="WebSocket Tests" parallel="false">
+        <groups>
+            <run>
+                <include name="websocket"/>
+            </run>
+        </groups>
+        <packages>
+            <package name="todo"/>
+        </packages>
+    </test>
+
+</suite>

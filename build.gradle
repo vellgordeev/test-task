@@ -1,0 +1,96 @@
+plugins {
+    id 'java'
+    id 'io.qameta.allure' version '2.12.0'
+    id 'io.freefair.lombok' version '6.6.1'
+    id "io.gatling.gradle" version "3.14.3"
+}
+
+group = 'ru.gordeev'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    gatling {
+        java.srcDirs = ['src/gatling/java']
+        resources.srcDirs = ['src/gatling/resources']
+
+        compileClasspath += sourceSets.main.runtimeClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
+configurations {
+    gatlingImplementation.extendsFrom implementation
+}
+
+ext {
+    testngVersion = '7.9.0'
+    restAssuredVersion = '5.4.0'
+    jsonSchemaValidatorVersion = '5.5.5'
+    lombokVersion = '1.18.30'
+    ownerVersion = '1.0.12'
+    awaitilityVersion = '4.2.0'
+    fakerVersion = '1.0.2'
+    assertjVersion = '3.25.1'
+    logbackVersion = '1.5.18'
+    allureVersion = '2.29.1'
+    javaWebSocketVersion = '1.5.5'
+    jacksonVersion = '2.19.0'
+}
+
+dependencies {
+    implementation "org.testng:testng:${testngVersion}"
+    implementation "io.rest-assured:rest-assured:${restAssuredVersion}"
+    implementation "io.rest-assured:json-schema-validator:${jsonSchemaValidatorVersion}"
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    implementation "org.aeonbits.owner:owner:${ownerVersion}"
+    implementation "org.awaitility:awaitility:${awaitilityVersion}"
+    implementation "com.github.javafaker:javafaker:${fakerVersion}"
+    implementation "org.assertj:assertj-core:${assertjVersion}"
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
+    implementation "io.qameta.allure:allure-testng:${allureVersion}"
+    implementation  "io.qameta.allure:allure-rest-assured:${allureVersion}"
+    implementation "org.java-websocket:Java-WebSocket:${javaWebSocketVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+}
+
+test {
+    useTestNG {
+        suites 'src/test/resources/testng.xml'
+    }
+
+    testLogging {
+        events 'skipped', 'failed'
+        exceptionFormat 'full'
+    }
+
+    doFirst {
+        delete layout.buildDirectory.dir('allure-results').get().asFile
+    }
+}
+
+gatling {
+    systemProperties = System.properties
+}
+
+allure {
+    version = '2.25.0'
+}
+
+clean {
+    delete "src/main/generated"
+    delete "src/test/generated_tests"
+}
