@@ -47,23 +47,71 @@ The framework follows a layered architecture pattern with clear separation of co
 
 ## 🚀 Key Features
 
-### Framework Core
-- **Fluent API Design**: Builder pattern for test data, chainable assertions
-- **Type-Safe Configuration**: Owner library with environment variable support
-- **Generic CRUD Operations**: Base classes for common REST patterns
-- **Smart Test Data Generation**: ModelBuilder with Faker integration
-- **WebSocket Support**: Thread-safe client with metrics and reconnection
-- **Custom Assertions**: Domain-specific assertions for better readability
-- **JSON Schema Validation**: Contract testing with schema files
-- **Parallel Execution**: TestNG configuration for optimal test distribution
+### API Service Architecture
 
-### Test Implementation
-- **Comprehensive Coverage**: All CRUD operations + WebSocket notifications
-- **Parallel Execution**: Tests grouped for concurrent execution (5 threads)
-- **Automatic Cleanup**: Thread-safe cleanup after each test
-- **JSON Schema Validation**: Contract testing for API responses
-- **Detailed Reporting**: Allure integration with custom templates
-- **Performance Testing**: Gatling simulations with multiple load patterns
+The framework provides a flexible abstraction layer for API interactions through the `BaseCrudService` and `CrudOperations` interfaces:
+
+**CRUD Pattern Support**
+- Maps standard CRUD operations to RESTful conventions based on resource path
+- Given `/todos`, automatically constructs:
+   - `create()` → POST /todos
+   - `getById(id)` → GET /todos/{id}
+   - `update(id, data)` → PUT /todos/{id}
+   - `delete(id)` → DELETE /todos/{id}
+- New services inherit this URL mapping by simply providing the resource path
+
+**Dual Method Approach**
+- **Checked Methods**: Include built-in validations
+   - Status code verification
+   - JSON Schema validation against `.json` files
+   - Type-safe response deserialization
+   - Example: `todoApi.create(todo)` → validates 201 + schema + returns Todo object
+
+- **Raw Methods**: Return pure REST Assured `Response` objects
+   - Full control for negative testing and custom validations
+   - No automatic assertions - test decides what to check
+   - Example: `todoApi.createRaw(malformedPayload)` → returns Response for custom assertions
+
+**Real-World Flexibility**
+
+The `TodoApiService` demonstrates how to adapt the base pattern:
+- Overrides `getById()` due to missing `GET /todos/:id` endpoint (searches in list instead)
+- Adds custom methods: `deleteRawWithoutAuth()` for auth testing
+- Implements `deleteAllTodos()` for cleanup operations
+- Shows that base classes are helpers, not constraints
+
+### Core Framework Capabilities
+
+- **Service Management**: `ApiProvider` registry for centralized service access
+- **Test Data Generation**:
+   - `ModelBuilder` with Faker for realistic data
+   - `PayloadBuilder` for creating invalid payloads (missing fields, wrong types)
+   - `TestDataRegistry` for consistent data across tests
+- **Configuration**: Type-safe with Owner library, supports env variables
+- **Utilities**:
+   - `PollingUtils` for condition-based waiting
+   - `ErrorMessages` for centralized error expectations
+   - `AuthTools` for Basic Auth header generation
+- **WebSocket Support**: Thread-safe client with metrics and auto-reconnection
+
+### Testing Features
+
+- **Execution Strategy**:
+   - Parallel execution with TestNG (configurable threads)
+   - Test grouping: `rest`, `websocket`, `sequential`
+   - Thread-safe cleanup queue for test isolation
+- **Validation & Assertions**:
+   - JSON Schema contract validation
+   - Custom assertions: `ResponseAssert`, `TodoAssert`, `TodoNotificationAssert`
+   - Fluent API for readable test code
+- **Reporting**:
+   - Allure integration with custom request/response templates
+   - Detailed step-by-step test documentation
+   - Screenshots and failure analysis
+- **Performance Testing**:
+   - Gatling integration with predefined load profiles
+   - Real-time metrics and comprehensive reports
+   - Support for various load patterns (spike, stress, ramp-up)
 
 ## 📋 Test Scenarios Coverage
 
@@ -123,17 +171,29 @@ The framework follows a layered architecture pattern with clear separation of co
 ## 📊 Test Results
 
 ### Functional Test Report (Allure)
-![Allure-report](.images/allure.png) 
-![Allure-report](.images/allure2.png)
-![Allure-report](.images/allure3.png)
-![Allure-report](.images/allure4.png)
+<details>
+<summary>📋 Click to view Allure report screenshots</summary>
+<p>
+
+![Allure Report Overview](.images/allure.png)
+![Allure Test Case Details](.images/allure2.png)
+![Allure Request/Response Body](.images/allure3.png)
+![Allure Custom Templates](.images/allure4.png)
+</p>
+</details>
 
 ### Performance Test Results (Gatling)
-![Gatling-report](.images/gatling.png)
-![Gatling-report](.images/gatling2.png)
-![Gatling-report](.images/gatling3.png)
-![Gatling-report](.images/gatling4.png)
-![Gatling-report](.images/gatling5.png)
+<details>
+<summary>📈 Click to view Gatling report screenshots</summary>
+<p>
+
+![Gatling Report Summary](.images/gatling.png)
+![Gatling Response Time Distribution](.images/gatling2.png)
+![Gatling Throughput Chart](.images/gatling3.png)
+![Gatling Active Users Over Time](.images/gatling4.png)
+![Gatling Response Time Percentiles](.images/gatling5.png)
+</p>
+</details>
 
 ## 🚦 Running Tests
 
@@ -226,13 +286,26 @@ All predefined performance assertions passed successfully, indicating high stabi
 | 99th | **2 ms** |
 | Max Response Time | **11 ms** |
 
+### Test Environment
+
+- **Hardware**: Intel Core i9-13900K (24 cores / 32 threads), 64 GB RAM
+- **OS**: Windows 11
+- **Network**: Localhost (no network latency)
+- **Application**: Single Docker container
+
+> **Note:** These results represent best-case scenario performance with no network latency.
+Production environments may show different characteristics.
+
 ### Conclusion & Analysis
+
+<div style="text-align:center;">
+  <img src="https://raw.githubusercontent.com/vellgordeev/test-task/master/.images/gatling_results.gif" alt="Gatling Performance Test Animation" width="100%">
+</div>
 
 The `POST /todos` endpoint demonstrates **exceptional performance and stability** under the simulated stress conditions on the local test environment.
 
 1.  **High Throughput & Stability:** The application sustained an average throughput of **150.5 requests per second** over the entire test duration **with a 0% error rate**. This indicates highly efficient and reliable request processing.
 2.  **Extremely Low Latency:** The response times are great. With 99% of all requests completing in just **2 milliseconds** and a maximum observed latency of only **11 milliseconds**, the create operation is highly optimized and shows no signs of degradation under increasing load.
-![gatling_animation](.images/gatling_results.gif)
 
 ## 🔍 Notable Implementation Details
 
